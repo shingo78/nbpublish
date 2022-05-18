@@ -40,7 +40,7 @@ class NotebookPublishCleaner(Application):
         }, 'Clear cell outputs')
     })
 
-    @default('output-dir')
+    @default('output_dir')
     def _default_output_dir(self):
         return os.getcwd()
 
