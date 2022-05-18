@@ -28,6 +28,7 @@ class NotebookPublishCleaner(Application):
     output_dir = Unicode(help='Output directory.').tag(config=True)
 
     clear_output = Bool(False, help='Clear cell outputs.').tag(config=True)
+    tree = Bool(False, help='Keep tree layout of source files.').tag(config=True)
 
     aliases = Dict({
         'trim-history' : 'NotebookPublishCleaner.trim_history',
@@ -37,7 +38,10 @@ class NotebookPublishCleaner(Application):
     flags = Dict({
         'clear-output' : ({
                 'NotebookPublishCleaner' : {'clear_output': True}
-        }, 'Clear cell outputs')
+        }, 'Clear cell outputs'),
+        'tree' : ({
+                'NotebookPublishCleaner' : {'tree': True}
+        }, 'Keep tree layout of source files.')
     })
 
     @default('output_dir')
@@ -57,16 +61,27 @@ class NotebookPublishCleaner(Application):
         with tempfile.TemporaryDirectory() as temp_dir:
             for src in self.extra_args:
                 src_dir, fname = os.path.split(src)
-                dest = os.path.join(temp_dir, fname)
+                temp_dest = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False)
+                self.log.debug('cleaning %s -> %s', src, temp_dest.name)
                 results.append(
-                    self._clean(src, dest)
+                    self._clean(src, temp_dest.name)
                 )
+
             for src, temp_file in results:
                 src_dir, fname = os.path.split(src)
                 shutil.copymode(src, temp_file)
-                output_file = os.path.join(self.output_dir)
-                shutil.copy(temp_file, output_file)
-
+                if self.tree:
+                    src_common_path = os.path.commonpath(self.extra_args)
+                    src_relpath = os.path.relpath(src, start=src_common_path)
+                    output_file = os.path.join(self.output_dir, src_relpath)
+                    self.log.debug('copy %s -> %s', temp_file, output_file)
+                    output_file_parent_dir, _ = os.path.split(output_file)
+                    os.makedirs(output_file_parent_dir, exist_ok=True)
+                    shutil.copy(temp_file, output_file)
+                else:
+                    output_file = os.path.join(self.output_dir, fname)
+                    self.log.debug('copy %s -> %s', temp_file, output_file)
+                    shutil.copy(temp_file, output_file)
 
     def _clean(self, src, dest):
 
