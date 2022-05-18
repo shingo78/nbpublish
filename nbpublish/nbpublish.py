@@ -17,30 +17,35 @@ from traitlets import Int, Bool, Unicode, Dict, default
 
 class NotebookPublishCleaner(Application):
     '''Notebook cleaner to publish'''
-    name = u'notebook publish cleaner'
-    description = u'Utility for cleaning up outputs and metadata in the notebook'
+    name = 'notebook publish cleaner'
+    description = (
+        'Utility for cleaning up outputs and metadata'
+        'in the notebook')
     examples = ""
 
-    trim_history = Int(None, min=0, allow_none=True,
-                       help='Max size of history for trimming, by default do nothing'
-                       ).tag(config=True)
+    trim_history = Int(
+        None, min=0, allow_none=True,
+        help='Max size of history for trimming, by default do nothing'
+    ).tag(config=True)
 
     output_dir = Unicode(help='Output directory.').tag(config=True)
 
-    clear_output = Bool(False, help='Clear cell outputs.').tag(config=True)
-    tree = Bool(False, help='Keep tree layout of source files.').tag(config=True)
+    clear_output = Bool(False,
+                        help='Clear cell outputs.').tag(config=True)
+    tree = Bool(False,
+                help='Keep tree layout of source files.').tag(config=True)
 
     aliases = Dict({
-        'trim-history' : 'NotebookPublishCleaner.trim_history',
-        'output-dir' : 'NotebookPublishCleaner.output_dir'
+        'trim-history': 'NotebookPublishCleaner.trim_history',
+        'output-dir': 'NotebookPublishCleaner.output_dir'
     })
 
     flags = Dict({
-        'clear-output' : ({
-                'NotebookPublishCleaner' : {'clear_output': True}
+        'clear-output': ({
+                'NotebookPublishCleaner': {'clear_output': True}
         }, 'Clear cell outputs'),
-        'tree' : ({
-                'NotebookPublishCleaner' : {'tree': True}
+        'tree': ({
+                'NotebookPublishCleaner': {'tree': True}
         }, 'Keep tree layout of source files.')
     })
 
@@ -61,7 +66,9 @@ class NotebookPublishCleaner(Application):
         with tempfile.TemporaryDirectory() as temp_dir:
             for src in self.extra_args:
                 src_dir, fname = os.path.split(src)
-                temp_dest = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False)
+                temp_dest = tempfile.NamedTemporaryFile(
+                    dir=temp_dir,
+                    delete=False)
                 self.log.debug('cleaning %s -> %s', src, temp_dest.name)
                 results.append(
                     self._clean(src, temp_dest.name)
@@ -137,6 +144,7 @@ class NotebookPublishCleaner(Application):
             nb_meme = nb.metadata['lc_notebook_meme']
             if 'lc_server_signature' in nb_meme:
                 del nb_meme['lc_server_signature']
+
 
 def main():
     NotebookPublishCleaner.launch_instance()
