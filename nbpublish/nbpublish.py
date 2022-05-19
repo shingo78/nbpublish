@@ -133,7 +133,8 @@ class NotebookPublishCleaner(Application):
             cell_meme = cell.metadata['lc_cell_meme']
             if 'history' in cell_meme:
                 history = cell_meme['history']
-                cell_meme['history'] = history[-self.trim_history:]
+                if len(history) > self.trim_history:
+                    cell_meme['history'] = history[-self.trim_history:]
 
     def _clear_lc_wrapper(self, nb, cell):
         if 'lc_wrapper' in cell.metadata:
@@ -171,7 +172,8 @@ class NotebookPublishCleaner(Application):
             return
 
         history = server_signature['history']
-        server_signature['history'] = history[-self.trim_server_signature]
+        if len(history) > self.trim_server_signature:
+            server_signature['history'] = history[-self.trim_server_signature]
 
 
 def main():
