@@ -25,7 +25,16 @@ class NotebookPublishCleaner(Application):
 
     trim_history = Int(
         None, min=0, allow_none=True,
-        help='Max size of history for trimming, by default do nothing'
+        help=(
+            'Max size of cell meme history for trimming, '
+            'by default do nothing')
+    ).tag(config=True)
+
+    trim_server_signature = Int(
+        None, min=0, allow_none=True,
+        help=(
+            'Max size of server signature history for trimming, '
+            '0 means delete completely, by default do nothing')
     ).tag(config=True)
 
     output_dir = Unicode(help='Output directory.').tag(config=True)
@@ -37,6 +46,7 @@ class NotebookPublishCleaner(Application):
 
     aliases = Dict({
         'trim-history': 'NotebookPublishCleaner.trim_history',
+        'trim-server-signature': 'NotebookPublishCleaner.trim_server_signature',
         'output-dir': 'NotebookPublishCleaner.output_dir'
     })
 
@@ -140,10 +150,28 @@ class NotebookPublishCleaner(Application):
                 del cell.metadata['pinned_outputs']
 
     def _clear_server_signature(self, nb):
+        if self.trim_server_signature is None:
+            return
+
         if 'lc_notebook_meme' in nb.metadata:
             nb_meme = nb.metadata['lc_notebook_meme']
-            if 'lc_server_signature' in nb_meme:
-                del nb_meme['lc_server_signature']
+
+            if self.trim_server_signature == 0:
+                if 'lc_server_signature' in nb_meme:
+                    del nb_meme['lc_server_signature']
+            else:
+                self._trim_server_signature_history(nb_meme)
+
+    def _trim_server_signature_history(self, nb_meme):
+        if 'lc_server_signature' not in nb_meme:
+            return
+
+        server_signature = nb_meme['lc_server_signature']
+        if 'history' not in server_signature:
+            return
+
+        history = server_signature['history']
+        server_signature['history'] = history[-self.trim_server_signature]
 
 
 def main():
