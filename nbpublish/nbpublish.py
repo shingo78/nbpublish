@@ -173,7 +173,7 @@ class NotebookPublishCleaner(Application):
 
         history = server_signature['history']
         if len(history) > self.trim_server_signature:
-            server_signature['history'] = history[-self.trim_server_signature]
+            server_signature['history'] = history[-self.trim_server_signature:]
 
 
 def main():
