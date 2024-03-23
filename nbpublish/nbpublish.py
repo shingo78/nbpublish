@@ -41,6 +41,11 @@ class NotebookPublishCleaner(Application):
 
     clear_output = Bool(False,
                         help='Clear cell outputs.').tag(config=True)
+
+    clear_execution_end_time = Bool(
+        False,
+        help="Clear execution_end_time in code cell meme").tag(config=True)
+
     tree = Bool(False,
                 help='Keep tree layout of source files.').tag(config=True)
 
@@ -54,6 +59,9 @@ class NotebookPublishCleaner(Application):
         'clear-output': ({
                 'NotebookPublishCleaner': {'clear_output': True}
         }, 'Clear cell outputs'),
+        'clear-execution-end-time': ({
+                'NotebookPublishCleaner': {'clear_execution_end_time': True}
+        }, 'Clear execution_end_time in code cell meme'),
         'tree': ({
                 'NotebookPublishCleaner': {'tree': True}
         }, 'Keep tree layout of source files.')
@@ -112,6 +120,7 @@ class NotebookPublishCleaner(Application):
             self._clear_lc_wrapper(nb, cell)
             self._clear_fronzon_cell(nb, cell)
             self._trim_meme_history(nb, cell)
+            self._clear_execution_end_time(nb, cell)
             self._clear_outputs(nb, cell)
 
         self._clear_server_signature(nb)
@@ -135,6 +144,14 @@ class NotebookPublishCleaner(Application):
                 history = cell_meme['history']
                 if len(history) > self.trim_history:
                     cell_meme['history'] = history[-self.trim_history:]
+
+    def _clear_execution_end_time(self, nb, cell):
+        if not self.clear_execution_end_time:
+            return
+        if 'lc_cell_meme' in cell.metadata:
+            cell_meme = cell.metadata['lc_cell_meme']
+            if 'execution_end_time' in cell_meme:
+                del cell_meme['execution_end_time']
 
     def _clear_lc_wrapper(self, nb, cell):
         if 'lc_wrapper' in cell.metadata:
