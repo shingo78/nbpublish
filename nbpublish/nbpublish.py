@@ -99,7 +99,13 @@ class NotebookPublishCleaner(Application):
                 src_dir, fname = os.path.split(src)
                 shutil.copymode(src, temp_file)
                 if self.tree:
-                    src_common_path = os.path.commonpath(self.extra_args)
+                    if len(self.extra_args) > 1:
+                        src_common_path = os.path.commonpath(self.extra_args)
+                    else:
+                        src_common_path = os.path.dirname(self.extra_args[0])
+                    self.log.debug(
+                        'tree mode: src common path=%s',
+                        src_common_path)
                     src_relpath = os.path.relpath(src, start=src_common_path)
                     output_file = os.path.join(self.output_dir, src_relpath)
                     self.log.debug('copy %s -> %s', temp_file, output_file)
