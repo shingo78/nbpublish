@@ -64,7 +64,10 @@ class NotebookPublishCleaner(Application):
         }, 'Clear execution_end_time in code cell meme'),
         'tree': ({
                 'NotebookPublishCleaner': {'tree': True}
-        }, 'Keep tree layout of source files.')
+        }, 'Keep tree layout of source files.'),
+        'debug': ({
+                'NotebookPublishCleaner': {'log_level': 'DEBUG'}
+        }, 'Set the log level to DEBUG')
     })
 
     @default('output_dir')
